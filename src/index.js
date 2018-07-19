@@ -1,9 +1,6 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
-
 
 class ComputerDisplay extends Component {
 
@@ -11,55 +8,88 @@ class ComputerDisplay extends Component {
         super(props);
         this.state = {
             computers: [
-                {name: 'Mac Book Pro', model: 'Early 2018'},
-                {name: 'Dell', model: 'Inspiron'}],
-            addingOrEditingComputer: false
-        }
+                {name: 'Mac Book Pro', model: 'Early 2018', id:1},
+                {name: 'Dell', model: 'Inspiron', id:2}],
+            addingComputer: false,
+            editingComputerId: null
+        };
 
         this.handleShowAddComputer = this.handleShowAddComputer.bind(this);
-        this.handleAddComputer = this.handleAddComputer.bind(this);
+        this.handleShowEditComputer = this.handleShowEditComputer.bind(this);
+        this.handleSaveComputer = this.handleSaveComputer.bind(this);
     }
 
     render() {
+        let component;
+
+        if (this.state.editingComputerId) {
+            component =  <ComputerAddOrEdit handleSaveComputer={this.handleSaveComputer} computerToEdit={this.findComputer(this.state.editingComputerId)}/>
+        } else if (this.state.addingComputer === false) {
+            component =
+            <div>
+                <h2>Computers <button onClick={this.handleShowAddComputer}>Add</button></h2>
+                 <ComputerListing computers={this.state.computers} handleShowEditComputer={this.handleShowEditComputer}/>
+            </div>
+        } else {
+            component = <ComputerAddOrEdit handleSaveComputer={this.handleSaveComputer}/>
+        }
+
         return (
             <div>
-                <h1>Computer Application v1.0 <button onClick={this.handleShowAddComputer}>Add</button></h1>
-                {this.state.addingOrEditingComputer === false > 0 &&
-                <ComputerListing computers={this.state.computers}/>
-                }
-
-                {this.state.addingOrEditingComputer === true > 0 &&
-                <ComputerAddOrEdit handleAddComputer={this.handleAddComputer}/>
-                }
+                <h1>Computer Application 1.0</h1>
+                {component}
             </div>
         );
     }
 
     handleShowAddComputer() {
         this.setState({
-            addingOrEditingComputer: true
+            addingComputer: true
         });
+    }
+
+    handleShowEditComputer(computerId) {
+        this.setState({
+            editingComputerId: computerId
+        });
+    }
+
+    handleSaveComputer(computer) {
+        if (computer.id) {
+            this.handleEditComputer(computer);
+        } else {
+            this.handleAddComputer(computer);
+        }
     }
 
     handleAddComputer(computer) {
         this.setState((prevState) => {
-            console.dir(prevState);
+            computer.id = Math.floor(Math.random() * 999999999) + 1; // todo improve random id generation
             let comps = prevState.computers.slice();
             comps.push(computer);
             return ({
                 computers: comps,
-                addingOrEditingComputer: false
+                addingComputer: false
             })
         });
+    }
+
+    handleEditComputer(computer) {
+        for (let i = 0; i < this.state.computers.length; i++) {
+            if (this.state.computers[i].id === computer.id) {
+                this.state.computers[i] = computer;
+            }
+        }
+        this.setState({editingComputerId: null});
+    }
+
+    findComputer(editingComputerId) {
+        return this.state.computers.find(computer => computer.id === editingComputerId);
     }
 }
 
 function ComputerListing(props) {
-    console.dir("ComputerListing", props);
-    console.dir(props);
-    let computersElem = props.computers.map(computer => <Computer {...computer} />);
-    // let computersElem = props.computers.map(computer =>  <Computer name={computer.name} model={computer.model} />);
-
+    let computersElem = props.computers.map(computer => <Computer handleShowEditComputer={props.handleShowEditComputer} {...computer} />);
     return (
         <ul>
             {computersElem}
@@ -70,7 +100,7 @@ function ComputerListing(props) {
 function Computer(props) {
     return (
         <li>
-            <h2>{props.name}</h2>
+            <h3>{props.name} <button onClick={() => props.handleShowEditComputer(props.id)}>Edit</button></h3>
             <div>Model: {props.model}</div>
         </li>
     );
@@ -79,10 +109,14 @@ function Computer(props) {
 class ComputerAddOrEdit extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            name: "",
-            model: ""
-        };
+        if (props.computerToEdit) {
+            this.state = props.computerToEdit; // todo clone object
+        } else {
+            this.state = {
+                name: "",
+                model: ""
+            };
+        }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -98,19 +132,27 @@ class ComputerAddOrEdit extends Component {
 
     handleSubmit(event) {
         event.preventDefault();
-        console.dir("computer", this.state);
-        this.props.handleAddComputer(this.state)
+        this.props.handleSaveComputer(this.state)
     }
 
     render() {
         return (
             <div>
-                <div>Create Computer</div>
+                <h3>{this.props.computerToEdit ? 'Edit ' + this.state.name  : 'Create ' + this.state.name}</h3>
                 <form onSubmit={this.handleSubmit}>
-                    <label>
-                        Name:
-                        <input name="name" type="text" value={this.state.name} onChange={this.handleChange}/>
-                    </label>
+                    <div>
+                        <label>
+                            Name:
+                            <input name="name" type="text" value={this.state.name} onChange={this.handleChange}/>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label>
+                            Model:
+                            <input name="model" type="text" value={this.state.model} onChange={this.handleChange}/>
+                        </label>
+                    </div>
                     <input type="submit" value="Submit" onSubmit={this.handleSubmit}/>
                 </form>
             </div>
@@ -127,7 +169,6 @@ class ParentComp extends Component {
         );
         return (
             <div>
-                <ComputerDisplay/>
                 Parent component
                 <ul>
                     {children}
@@ -164,6 +205,5 @@ function ChildFuncComp(props) {
     );
 }
 
-ReactDOM.render(<ParentComp/>, document.getElementById('root'));
+ReactDOM.render(<ComputerDisplay/>, document.getElementById('root'));
 
-registerServiceWorker();
