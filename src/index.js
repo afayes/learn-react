@@ -8,8 +8,8 @@ class ComputerDisplay extends Component {
         super(props);
         this.state = {
             computers: [
-                {name: 'Mac Book Pro', model: 'Early 2018', id:1},
-                {name: 'Dell', model: 'Inspiron', id:2}],
+                {name: 'Mac Book Pro', model: 'Early 2018', id: 1},
+                {name: 'Dell', model: 'Inspiron', id: 2}],
             addingComputer: false,
             editingComputerId: null
         };
@@ -23,13 +23,15 @@ class ComputerDisplay extends Component {
         let component;
 
         if (this.state.editingComputerId) {
-            component =  <ComputerAddOrEdit handleSaveComputer={this.handleSaveComputer} computerToEdit={this.findComputer(this.state.editingComputerId)}/>
+            component = <ComputerAddOrEdit handleSaveComputer={this.handleSaveComputer}
+                                           computerToEdit={this.findComputer(this.state.editingComputerId)}/>
         } else if (this.state.addingComputer === false) {
             component =
-            <div>
-                <h2>Computers <button onClick={this.handleShowAddComputer}>Add</button></h2>
-                 <ComputerListing computers={this.state.computers} handleShowEditComputer={this.handleShowEditComputer}/>
-            </div>
+                <div>
+                    <h2>Computers <button onClick={this.handleShowAddComputer}>Add</button></h2>
+                    <ComputerListing computers={this.state.computers}
+                                     handleShowEditComputer={this.handleShowEditComputer}/>
+                </div>
         } else {
             component = <ComputerAddOrEdit handleSaveComputer={this.handleSaveComputer}/>
         }
@@ -65,31 +67,34 @@ class ComputerDisplay extends Component {
     handleAddComputer(computer) {
         this.setState((prevState) => {
             computer.id = Math.floor(Math.random() * 999999999) + 1; // todo improve random id generation
-            let comps = prevState.computers.slice();
-            comps.push(computer);
-            return ({
-                computers: comps,
+            let computers = prevState.computers.slice();
+            computers.push(computer);
+            return {
+                computers,
                 addingComputer: false
-            })
+            }
         });
     }
 
     handleEditComputer(computer) {
-        for (let i = 0; i < this.state.computers.length; i++) {
-            if (this.state.computers[i].id === computer.id) {
-                this.state.computers[i] = computer;
+        let computers = this.state.computers.slice();
+        for (let i = 0; i < computers.length; i++) {
+            if (computers[i].id === computer.id) {
+                computers[i] = computer;
             }
         }
-        this.setState({editingComputerId: null});
+        this.setState({computers, editingComputerId: null});
     }
 
-    findComputer(editingComputerId) {
-        return this.state.computers.find(computer => computer.id === editingComputerId);
+    findComputer(id) {
+        const computer = this.state.computers.find(computer => computer.id === id);
+        return Object.assign({}, computer);
     }
 }
 
 function ComputerListing(props) {
-    let computersElem = props.computers.map(computer => <Computer handleShowEditComputer={props.handleShowEditComputer} {...computer} />);
+    let computersElem = props.computers.map(computer => <Computer
+        handleShowEditComputer={props.handleShowEditComputer} {...computer} />);
     return (
         <ul>
             {computersElem}
@@ -100,7 +105,9 @@ function ComputerListing(props) {
 function Computer(props) {
     return (
         <li>
-            <h3>{props.name} <button onClick={() => props.handleShowEditComputer(props.id)}>Edit</button></h3>
+            <h3>{props.name}
+                <button onClick={() => props.handleShowEditComputer(props.id)}>Edit</button>
+            </h3>
             <div>Model: {props.model}</div>
         </li>
     );
@@ -110,7 +117,7 @@ class ComputerAddOrEdit extends Component {
     constructor(props) {
         super(props);
         if (props.computerToEdit) {
-            this.state = props.computerToEdit; // todo clone object
+            this.state = {...props.computerToEdit}; // todo clone object
         } else {
             this.state = {
                 name: "",
@@ -138,7 +145,7 @@ class ComputerAddOrEdit extends Component {
     render() {
         return (
             <div>
-                <h3>{this.props.computerToEdit ? 'Edit ' + this.state.name  : 'Create ' + this.state.name}</h3>
+                <h3>{this.props.computerToEdit ? 'Edit ' + this.state.name : 'Create ' + this.state.name}</h3>
                 <form onSubmit={this.handleSubmit}>
                     <div>
                         <label>
