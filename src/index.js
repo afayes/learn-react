@@ -1,7 +1,3 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import {ComputerApp} from "./ComputerApp";
+import renderApp from './appWithRouting/index';
 
-ReactDOM.render(<ComputerApp/>, document.getElementById('root'));
-
+renderApp();
