@@ -1,6 +1,6 @@
 import {combineReducers} from 'redux';
-import items from './items';
+import computers from './computers';
 
 export default combineReducers({
-    items
+    computers
 })
