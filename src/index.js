@@ -1,3 +1,3 @@
-import renderApp from './ComputerAppWithReduxAndAysncActionsAndRouting/index';
+import renderApp from './ComputerAppWithEpic/index';
 
 renderApp();
